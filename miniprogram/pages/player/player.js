@@ -19,6 +19,7 @@ Page({
     picUrl: '', // 背景图片
     isPlaying: false, // 当前是否正在播放
     isLyricShow: false, // 表示当前歌词是否显示
+    isSame: false, // 表示是否为同一首歌
     lyric: '', // 歌词
   },
 
@@ -87,7 +88,19 @@ Page({
    * @private
    */
   _loadMusicDetail(musicId) {
-    backgroundAudioManager.stop()
+    // 优先判断是否为同一首歌
+    if (musicId === app.getPlayingMusicId()) {
+      this.setData({
+        isSame: true
+      });
+    } else {
+      this.setData({
+        isSame: false
+      });
+    }
+    if (!this.data.isSame) {
+      backgroundAudioManager.stop()
+    }
     // 设置选中的列表颜色
     app.setPlayingMusicId(musicId);
 
@@ -108,13 +121,33 @@ Page({
     }).then(res => {
       console.log('musicUrl', JSON.parse(res.result))
       const {data} = JSON.parse(res.result)
-      backgroundAudioManager.src = data[0].url
-      backgroundAudioManager.title = music.name
-      backgroundAudioManager.coverImgUrl = music.al.picUrl
-      backgroundAudioManager.singer = music.ar[0].name
-      backgroundAudioManager.epname = music.al.name
-      this.setData({isPlaying: true})
-      wx.hideLoading()
+      // vip歌曲
+      if (data[0].url == null) {
+        wx.showToast({
+          title: '无权限播放',
+        })
+        return
+      }
+      if (!this.data.isSame) {
+        backgroundAudioManager.src = data[0].url
+        backgroundAudioManager.title = music.name
+        backgroundAudioManager.coverImgUrl = music.al.picUrl
+        backgroundAudioManager.singer = music.ar[0].name
+        backgroundAudioManager.epname = music.al.name
+      }
+      // 如果歌曲相同并且之前是暂停状态
+      console.log('back', backgroundAudioManager.paused)
+      const {paused} = backgroundAudioManager
+      if (typeof paused === "undefined" || !this.data.isSame) {
+        this.setData({isPlaying: true});
+      }else if (typeof paused === "boolean" && paused) {
+        this.setData({isPlaying: false});
+        // 更新进度条进度
+        this.selectComponent('#progress').onTouchEnd(true);
+      }else if (typeof paused === "boolean" && !paused) {
+        this.setData({isPlaying: true});
+      }
+
       // 加载歌词
       wx.cloud.callFunction({
         name: 'music',
@@ -131,10 +164,11 @@ Page({
       console.log(err)
       wx.hideLoading()
     })
+    wx.hideLoading();
   },
 
   /**
-   * 切换播放状态
+   * 点击了播放/暂停,切换播放状态
    */
   togglePlaying() {
     const {isPlaying} = this.data;
@@ -195,6 +229,7 @@ Page({
    * 根据当前时间更新当前歌词状态
    */
   timeUpdate(event) {
+    // 父组件调用子组件方法
     this.selectComponent('.lyric').update(event.detail.currentTime)
   }
 })

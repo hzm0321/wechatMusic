@@ -16,7 +16,11 @@ App({
     }
 
     this.globalData = {
-      playingMusicId: -1
+      playingMusicId: -1, // 当前播放的音乐id
+      musicProgress: {
+        progress: 0,
+        movableDis: 0
+      }, // 当前播放的音乐进度
     }
   },
 
@@ -27,5 +31,14 @@ App({
 
   getPlayingMusicId() {
     return this.globalData.playingMusicId
+  },
+
+  setMusicProgress(value){
+    this.globalData.musicProgress = value
+    return true
+  },
+
+  getMusicProgress() {
+    return this.globalData.musicProgress
   }
 })

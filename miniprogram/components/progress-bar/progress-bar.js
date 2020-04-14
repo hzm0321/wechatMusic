@@ -6,11 +6,18 @@ let currentSec = -1
 // 表示当前进度条是否在拖拽，解决：当进度条拖动时候和updatetime事件有冲突的问题
 let isMoving = false
 
+const app = getApp()
+
 Component({
   /**
    * 组件的属性列表
    */
-  properties: {},
+  properties: {
+    isSame: {
+      type: Boolean,
+      value: false
+    }
+  },
 
   /**
    * 组件的初始数据
@@ -26,8 +33,17 @@ Component({
 
   lifetimes: {
     ready() {
+      if (this.properties.isSame && this.data.showTime.totalTime === '00:00') {
+        this._setTime()
+      }
       this._getMovableDis()
       this._bindBGMEvent()
+    },
+    detached() {
+      app.setMusicProgress({
+        progress: this.data.progress,
+        movableDis: this.data.movableDis
+      });
     }
   },
 
@@ -55,13 +71,15 @@ Component({
     /**
      * 拖动松开时触发
      */
-    onTouchEnd() {
+    onTouchEnd(v) {
       const {currentTime, duration} = backgroundAudioManager
+      const {progress,movableDis} = app.getMusicProgress()
       this.setData({
-        progress: this.data.progress,
-        movableDis: this.data.movableDis,
+        progress: typeof v !== 'object' ? progress : this.data.progress,
+        movableDis: typeof v !== 'object' ? movableDis : this.data.movableDis,
         ['showTime.currentTime']: this._formatDate(currentTime)
       })
+      console.log('触发了', this.data.progress)
       backgroundAudioManager.seek(duration * this.data.progress / 100)
       isMoving = false
       // console.log('end',isMoving)
