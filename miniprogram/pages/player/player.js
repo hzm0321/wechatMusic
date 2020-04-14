@@ -7,6 +7,9 @@ let nowPlayingIndex = 0
 // 获取全局唯一的背景音频播放管理器
 const backgroundAudioManager = wx.getBackgroundAudioManager()
 
+// 获取全局属性
+const app = getApp()
+
 Page({
 
   /**
@@ -15,6 +18,8 @@ Page({
   data: {
     picUrl: '', // 背景图片
     isPlaying: false, // 当前是否正在播放
+    isLyricShow: false, // 表示当前歌词是否显示
+    lyric: '', // 歌词
   },
 
   /**
@@ -83,6 +88,9 @@ Page({
    */
   _loadMusicDetail(musicId) {
     backgroundAudioManager.stop()
+    // 设置选中的列表颜色
+    app.setPlayingMusicId(musicId);
+
     wx.showLoading({
       title: '歌曲加载中'
     })
@@ -107,6 +115,18 @@ Page({
       backgroundAudioManager.epname = music.al.name
       this.setData({isPlaying: true})
       wx.hideLoading()
+      // 加载歌词
+      wx.cloud.callFunction({
+        name: 'music',
+        data: {
+          musicId,
+          $url: 'lyric',
+        }
+      }).then(res => {
+        const {lrc} = JSON.parse(res.result);
+        let lyric = lrc ? lrc.lyric : '暂无歌词';
+        this.setData({lyric});
+      })
     }).catch(err => {
       console.log(err)
       wx.hideLoading()
@@ -142,5 +162,39 @@ Page({
       nowPlayingIndex = 0
     }
     this._loadMusicDetail(musicList[nowPlayingIndex].id)
+  },
+
+  /**
+   * 监听播放
+   */
+  onPlay() {
+    this.setData({
+      isPlaying: true,
+    })
+  },
+
+  /**
+   * 监听暂停
+   */
+  onPause() {
+    this.setData({
+      isPlaying: false,
+    })
+  },
+
+  /**
+   * 切换歌词
+   */
+  onChangeLyricShow() {
+    this.setData({
+      isLyricShow: !this.data.isLyricShow
+    })
+  },
+
+  /**
+   * 根据当前时间更新当前歌词状态
+   */
+  timeUpdate(event) {
+    this.selectComponent('.lyric').update(event.detail.currentTime)
   }
 })

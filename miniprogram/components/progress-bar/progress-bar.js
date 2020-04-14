@@ -43,7 +43,7 @@ Component({
     onChange(event) {
       // console.log(event)
       const {source, x} = event.detail
-      console.log(source)
+      // console.log(source)
       if (source === 'touch') {
         this.data.progress = x / (movableAreaWidth - movableViewWidth) * 100;
         this.data.movableDis = x
@@ -90,6 +90,7 @@ Component({
       backgroundAudioManager.onPlay(() => {
         isMoving = false
         console.log('onPlay')
+        this.triggerEvent('musicPlay')
       })
 
       backgroundAudioManager.onStop(() => {
@@ -98,6 +99,7 @@ Component({
 
       backgroundAudioManager.onPause(() => {
         console.log('Pause')
+        this.triggerEvent('musicPause')
       })
 
       backgroundAudioManager.onWaiting(() => {
@@ -120,7 +122,11 @@ Component({
               progress: currentTime / duration * 100,
               ['showTime.currentTime']: this._formatDate(currentTime)
             });
-            currentSec = sec
+            currentSec = sec;
+            // 联动歌词
+            this.triggerEvent('timeUpdate', {
+              currentTime
+            });
           }
         }
       })
