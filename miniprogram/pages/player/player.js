@@ -1,10 +1,12 @@
-// pages/player/player.js
 // 歌曲列表
 let musicList = []
+
 // 正在播放歌曲的index
 let nowPlayingIndex = 0
+
 // 获取全局唯一的背景音频播放管理器
 const backgroundAudioManager = wx.getBackgroundAudioManager()
+
 Page({
 
   /**
