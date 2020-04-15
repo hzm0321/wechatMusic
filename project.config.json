@@ -57,6 +57,20 @@
 					"pathName": "pages/player/player",
 					"query": "musicid=1356481855&index=0",
 					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "found",
+					"pathName": "pages/blog/blog",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": 4,
+					"name": "edit",
+					"pathName": "pages/blog-edit/blog-edit",
+					"query": "nickName=\"。\"& avatarUrl=\"https://wx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTLsPRbCWVT8LPicUYXjVOibwibnZ1G2xC5ibfvElkpEfeMgTFibQeBqBFLO7luWo7SXWsX0DXcSUU2kShQ/132\"",
+					"scene": null
 				}
 			]
 		}
